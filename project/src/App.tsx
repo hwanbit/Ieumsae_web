@@ -1,0 +1,43 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import Login from './components/Login'
+import Home from './components/Home'
+import Dashboard from './components/Dashboard'
+
+function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'))
+
+    // 인증 상태가 바뀌는 걸 감지하도록 Storage 이벤트 처리
+    useEffect(() => {
+        const checkAuth = () => setIsAuthenticated(!!localStorage.getItem('token'))
+        window.addEventListener('storage', checkAuth)
+        return () => window.removeEventListener('storage', checkAuth)
+    }, [])
+
+    return (
+        <Router>
+            <Routes>
+                <Route
+                    path="/"
+                    element={
+                        isAuthenticated ? <Navigate to="/home" /> : <Login onLogin={() => setIsAuthenticated(true)} />
+                    }
+                />
+                <Route
+                    path="/home"
+                    element={
+                        isAuthenticated ? <Home /> : <Navigate to="/" />
+                    }
+                />
+                <Route
+                    path="/dashboard"
+                    element={
+                        isAuthenticated ? <Dashboard /> : <Navigate to="/" />
+                    }
+                />
+            </Routes>
+        </Router>
+    )
+}
+
+export default App
