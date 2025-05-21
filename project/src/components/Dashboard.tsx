@@ -21,6 +21,7 @@ interface WeatherData {
     timestamp: string;
     icon: string;
     id?: number; // Add id field for weather condition code
+    location: string; // Add location field for city name
 }
 
 function Dashboard() {
@@ -42,11 +43,11 @@ function Dashboard() {
     // Map weather condition ID to Korean description
     const getKoreanWeatherDesc = (id: number): string => {
         const weather = weatherDescKo.find((item) => item[id]);
-        return weather ? weather[id] : '알 수 없는 날씨'; // Fallback if ID not found
+        return weather ? weather[id] : '서울'; // Fallback if ID not found
     };
 
     useEffect(() => {
-        const fetchWeather = async () => {
+        const fetchWeather = async (lat?: number, lon?: number) => {
             const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
             if (!API_KEY) {
                 console.error('OpenWeatherMap API key is missing. Please set REACT_APP_OPENWEATHER_API_KEY in .env file.');
@@ -56,21 +57,26 @@ function Dashboard() {
                     timestamp: new Date().toISOString(),
                     icon: '01d',
                     id: 800,
+                    location: '서울', // Fallback location
                 });
                 return;
             }
 
             try {
-                const response = await axios.get(
-                    `https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=${API_KEY}&units=metric&lang=kr`
-                );
-                const weatherId = response.data.weather[0].id; // Get weather condition ID
+                // Use lat/lon if provided, otherwise fall back to Seoul
+                const url = lat && lon
+                    ? `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+                    : `https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=${API_KEY}&units=metric`;
+
+                const response = await axios.get(url);
+                const weatherId = response.data.weather[0].id;
                 setWeather({
                     temperature: Math.round(response.data.main.temp),
                     description: getKoreanWeatherDesc(weatherId), // Use Korean description
                     timestamp: new Date().toISOString(),
                     icon: response.data.weather[0].icon,
                     id: weatherId,
+                    location: response.data.name || '서울', // Use city name or fallback
                 });
             } catch (error) {
                 console.error('ēdError fetching weather:', error);
@@ -80,12 +86,34 @@ function Dashboard() {
                     timestamp: new Date().toISOString(),
                     icon: '01d',
                     id: 800,
+                    location: '서울', // Fallback location
                 });
             }
         };
 
-        fetchWeather();
-        const weatherInterval = setInterval(fetchWeather, 300000); // Update every 5 minutes
+        // Get user's location
+        const getUserLocation = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        fetchWeather(latitude, longitude);
+                    },
+                    (error) => {
+                        console.error('Error getting location:', error);
+                        // Fallback to Seoul if geolocation fails
+                        fetchWeather();
+                    }
+                );
+            } else {
+                console.error('Geolocation is not supported by this browser.');
+                // Fallback to Seoul if geolocation is unsupported
+                fetchWeather();
+            }
+        };
+
+        getUserLocation();
+        const weatherInterval = setInterval(getUserLocation, 300000); // Update every 5 minutes
 
         return () => clearInterval(weatherInterval);
     }, []);
@@ -243,7 +271,7 @@ function Dashboard() {
                     {/* Right Column - Weather and Camera 3 */}
                     <div className="space-y-4">
                         <div className="bg-navy-800 p-4 rounded-lg">
-                            <h3 className="mb-2 text-center">실시간 날씨</h3>
+                            <h3 className="mb-2 text-center">실시간 {weather?.location || '서울'}의 날씨</h3>
                             {weather && (
                                 <div className="text-center">
                                     <img
@@ -260,7 +288,7 @@ function Dashboard() {
                             )}
                         </div>
                         <div className="bg-navy-800 p-4 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
+                        <div className="flex justify-between items-center mb-2">
                                 <h3>카메라 3: {rtspStream3}</h3>
                                 <span
                                     className={`px-2 py-1 rounded text-xs ${
