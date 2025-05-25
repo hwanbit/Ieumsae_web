@@ -2,7 +2,7 @@
 // import ReactPlayer from 'react-player'
 // import axios from 'axios'
 // import { format } from 'date-fns'
-// import busLogo from '../assets/iumsae_logo.png'
+// import busLogo from '../assets/ieumsae_logo.png'
 // import screenIcon from '../assets/screen.svg'
 // import databaseIcon from '../assets/database.svg'
 // import homeIcon from '../assets/home.svg'

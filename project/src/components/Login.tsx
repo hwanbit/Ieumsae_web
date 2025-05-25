@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import logo from '../assets/ieumsae_logo.png'
+
 interface LoginFormData {
   username: string
   password: string
@@ -18,8 +20,8 @@ interface LoginProps {
 function Login({ onLogin }: LoginProps) {
   const navigate = useNavigate()
   const [formData, setFormData] = useState<LoginFormData>({
-    username: 'admin',
-    password: 'kopo123'
+    username: '',
+    password: ''
   })
   const [error, setError] = useState<string>('')
 
@@ -42,7 +44,7 @@ function Login({ onLogin }: LoginProps) {
         throw new Error(data.message || 'Login failed')
       }
 
-      localStorage.setItem('token', data.token)
+      sessionStorage.setItem('token', data.token)
       onLogin()  // 인증 상태 갱신
       navigate('/home')
     } catch (err) {
@@ -62,20 +64,7 @@ function Login({ onLogin }: LoginProps) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-full max-w-md p-8 space-y-6">
           <div className="flex justify-center mb-8">
-            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
-              <svg
-                  className="w-10 h-10 text-primary"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            </div>
+            <img src={logo} alt="logo" width="70px"/>
           </div>
 
           {error && (
@@ -92,7 +81,7 @@ function Login({ onLogin }: LoginProps) {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="USERNAME"
-                  className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
+                  className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded text-white text-sm placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
               />
             </div>
 
@@ -103,13 +92,13 @@ function Login({ onLogin }: LoginProps) {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="PASSWORD"
-                  className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded text-white placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
+                  className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded text-white text-sm placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
               />
             </div>
 
             <button
                 type="submit"
-                className="w-full py-3 bg-white text-secondary font-semibold rounded hover:bg-opacity-90 transition-colors"
+                className="w-full py-3 bg-white text-secondary text-sm font-bold rounded hover:bg-opacity-90 transition-colors"
             >
               LOGIN
             </button>

@@ -1,1 +1,1 @@
-/// <reference types="vite/client" />
+/// <reference types="vite/client" />npm install react-lottie-player

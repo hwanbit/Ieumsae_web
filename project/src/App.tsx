@@ -5,11 +5,11 @@ import Home from './components/Home'
 import Dashboard from './components/Dashboard'
 
 function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token'))
+    const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('token'))
 
     // 인증 상태가 바뀌는 걸 감지하도록 Storage 이벤트 처리
     useEffect(() => {
-        const checkAuth = () => setIsAuthenticated(!!localStorage.getItem('token'))
+        const checkAuth = () => setIsAuthenticated(!!sessionStorage.getItem('token'))
         window.addEventListener('storage', checkAuth)
         return () => window.removeEventListener('storage', checkAuth)
     }, [])
@@ -26,7 +26,9 @@ function App() {
                 <Route
                     path="/home"
                     element={
-                        isAuthenticated ? <Home /> : <Navigate to="/" />
+                        isAuthenticated
+                            ? <Home onLogout={() => setIsAuthenticated(false)} />
+                            : <Navigate to="/" />
                     }
                 />
                 <Route
