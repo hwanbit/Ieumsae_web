@@ -64,7 +64,7 @@ function Login({ onLogin }: LoginProps) {
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-full max-w-md p-8 space-y-6">
           <div className="flex justify-center mb-8">
-            <img src={logo} alt="logo" width="70px"/>
+            <img src={logo} alt="logo" width="100px" style={{ border: "1px solid white" }} />
           </div>
 
           {error && (
@@ -81,7 +81,7 @@ function Login({ onLogin }: LoginProps) {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="USERNAME"
-                  className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded text-white text-sm placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
+                  className="w-full px-4 py-3 bg-[#002B51] bg-opacity-10 border border-white border-opacity-20 rounded text-white text-sm placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
               />
             </div>
 
@@ -92,7 +92,7 @@ function Login({ onLogin }: LoginProps) {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="PASSWORD"
-                  className="w-full px-4 py-3 bg-white bg-opacity-10 border border-white border-opacity-20 rounded text-white text-sm placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
+                  className="w-full px-4 py-3 bg-[#002B51] bg-opacity-10 border border-white border-opacity-20 rounded text-white text-sm placeholder-white placeholder-opacity-50 focus:outline-none focus:border-opacity-50"
               />
             </div>
 
