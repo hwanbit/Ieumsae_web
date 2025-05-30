@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom'
 import weatherDescKo from '../weatherDescKo.ts';
 import logo from "../assets/ieumsae_logo.png";
 import logoutIcon from "../assets/logout.svg";
+import alarmlottie from '../assets/alarm_lottie.json'
+import Lottie from "react-lottie-player";
 
 interface DetectionLog {
     timestamp: string
@@ -56,8 +58,30 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         return weather ? weather[id] : '서울'; // Fallback if ID not found
     };
 
+    // 좌표 → 주소 변환 함수 (Kakao API)
+    const getKoreanAddress = async (lat: number, lon: number): Promise<string> => {
+        const KAKAO_API_KEY = `KakaoAK ${import.meta.env.VITE_KAKAO_REST_API_KEY}`;
+
+        try {
+            const response = await axios.get(
+                `https://dapi.kakao.com/v2/local/geo/coord2regioncode.json?x=${lon}&y=${lat}`,
+                {
+                    headers: {
+                        Authorization: KAKAO_API_KEY,
+                    },
+                }
+            );
+
+            const result = response.data.documents[0];
+            return `${result.region_1depth_name} ${result.region_2depth_name}`;
+        } catch (error) {
+            console.error('주소 변환 실패:', error);
+            return '서울';
+        }
+    };
+
     useEffect(() => {
-        const fetchWeather = async (lat?: number, lon?: number) => {
+        const fetchWeather = async (lat: number, lon: number) => {
             const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
             if (!API_KEY) {
                 setWeatherError('OpenWeatherMap API key is missing. Please set REACT_APP_OPENWEATHER_API_KEY in .env file.');
@@ -65,31 +89,31 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             }
 
             try {
-                // Use lat/lon if provided, otherwise fall back to Seoul
-                const url = lat && lon
-                    ? `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
-                    : `https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=${API_KEY}&units=metric`;
+                // 날씨 API 요청
+                const weatherResponse = await axios.get(
+                    `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+                );
 
-                const response = await axios.get(url);
-                const weatherId = response.data.weather[0].id;
+                const weatherId = weatherResponse.data.weather[0].id;
+                const description = getKoreanWeatherDesc(weatherId);
+                const temperature = Math.round(weatherResponse.data.main.temp);
+                const icon = weatherResponse.data.weather[0].icon;
+                const timestamp = new Date().toISOString();
+
+                // 주소 변환
+                const location = await getKoreanAddress(lat, lon);
+
                 setWeather({
-                    temperature: Math.round(response.data.main.temp),
-                    description: getKoreanWeatherDesc(weatherId), // Use Korean description
-                    timestamp: new Date().toISOString(),
-                    icon: response.data.weather[0].icon,
+                    temperature,
+                    description,
+                    icon,
                     id: weatherId,
-                    location: response.data.name || '서울', // Use city name or fallback
+                    location,
+                    timestamp,
                 });
             } catch (error) {
-                console.error('Error fetching weather:', error);
-                setWeather({
-                    temperature: 22,
-                    description: '맑음',
-                    timestamp: new Date().toISOString(),
-                    icon: '01d',
-                    id: 800,
-                    location: '서울', // Fallback location
-                });
+                console.error('날씨 정보 불러오기 실패:', error);
+                setWeatherError('날씨 정보를 불러올 수 없습니다.');
             }
         };
 
@@ -102,15 +126,12 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         fetchWeather(latitude, longitude);
                     },
                     (error) => {
-                        console.error('Error getting location:', error);
-                        // Fallback to Seoul if geolocation fails
-                        fetchWeather();
+                        console.error('위치 정보를 불러오지 못했습니다:', error);
+                        setWeatherError('위치 권한을 허용해주세요.');
                     }
                 );
             } else {
-                console.error('Geolocation is not supported by this browser.');
-                // Fallback to Seoul if geolocation is unsupported
-                fetchWeather();
+                setWeatherError('이 브라우저는 위치 정보를 지원하지 않습니다.');
             }
         };
 
@@ -278,10 +299,10 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             </div>
 
             {/* Right Sidebar - Weather & Camera 3 */}
-            <div className="w-[400px] h-screen bg-white border-l-2 border-gray-100 fixed top-0 right-0 flex flex-col items-center py-6 justify-between px-4 overflow-y-auto">
-                <div className="w-full space-y-4">
-                    <div className="border border-b-gray-500 p-4 rounded-lg text-center">
-                        <h3 className="mb-2">실시간 {weather?.location || '서울'}의 날씨</h3>
+            <div className="w-[400px] h-screen bg-white border-l-2 border-gray-100 fixed top-12 right-0 flex flex-col items-center py-6 justify-between px-4 overflow-y-auto">
+                <div className="w-full space-y-2">
+                    <div className="border border-b-gray-500 p-4 rounded-lg h-[215px] text-center">
+                        <h3 className="mb-2 text-sm">실시간 {weather?.location || '서울'}의 날씨</h3>
                         {weatherError ? (
                             <p className="text-red-500">{weatherError}</p>
                         ) : weather ? (
@@ -291,9 +312,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                                     alt={weather.description}
                                     className="mx-auto w-16 h-16 mb-2"
                                 />
-                                <div className="text-4xl font-bold mb-2">{weather.temperature}°C</div>
-                                <div className="text-gray-400 capitalize">{weather.description}</div>
-                                <div className="text-sm text-gray-400 mt-2">
+                                <div className="text-2xl font-bold mb-2">{weather.temperature}°C</div>
+                                <div className="text-black text-sm capitalize">{weather.description}</div>
+                                <div className="text-xs text-gray-700 mt-2">
                                     {format(new Date(weather.timestamp), 'HH:mm 업데이트')}
                                 </div>
                             </div>
@@ -302,9 +323,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         )}
                     </div>
 
-                    <div className="border border-b-gray-500 p-4 rounded-lg">
+                    <div className="flex h-24 items-center justify-center ml-28 mb-12 me-[100px] my-16">
+                        <Lottie
+                            animationData={alarmlottie}
+                            loop
+                            play
+                            style={{ width: 180, height: 180 }}
+                        />
+                    </div>
+
+                    <div className="border border-b-gray-500 p-4 rounded-lg mt-10">
                         <div className="flex justify-between items-center mb-2">
-                            <h3>CAMERA ID: 127.128.56.07</h3>
+                            <h3 className="text-sm">CCTV</h3>
                             <span className={`px-2 py-1 rounded text-xs ${connectionStatus.camera3 ? 'bg-green-600' : 'bg-red-600'}`}>
               {connectionStatus.camera3 ? '연결됨' : '연결 안됨'}
             </span>
@@ -320,15 +350,23 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         </div>
                     </div>
 
-                    <div className="border border-b-gray-500 p-4 rounded-lg h-64 overflow-y-auto">
-                        <h3 className="mb-2">감지 로그</h3>
+                    <div className="border border-gray-500 w-[365px] h-56 mt-10 overflow-y-auto rounded-lg bg-white text-black">
+                    {/* 상단 헤더: 감지 로그 + CAMERA ID */}
+                    <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
+                        <h3 className="font-semibold text-sm text-white">감지 로그</h3>
+                        <span className="text-sm text-white">CCTV</span>
+                    </header>
+
+                    {/* 로그 리스트 영역 */}
+                    <div className="p-4 text-sm text-black">
                         {logs3.map((log, index) => (
-                            <div key={index} className="text-sm mb-2">
-                                <span className="text-gray-400">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
-                                <span className="ml-2">{log.objects.join(', ')}</span>
+                            <div key={index} className="mb-2 text-black">
+                                <span className="text-black">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
+                                <span className="ml-2 text-black">{log.objects.join(', ')}</span>
                             </div>
                         ))}
                     </div>
+                </div>
                 </div>
             </div>
         </div>
