@@ -22,21 +22,24 @@ function Home({ onLogout }: { onLogout: () => void }) {
   return (
       <div className="min-h-screen flex bg-white text-black">
         {/* 사이드 메뉴 고정 */}
-        <div className="w-24 h-screen bg-white border-r-2 border-gray-100 fixed top-0 left-0 flex flex-col items-center py-6 justify-between">
+        <div className="w-24 h-screen bg-white border-r-2 border-gray-200 fixed top-0 left-0 flex flex-col items-center py-6 justify-between">
           <div>
           <img src={logo} alt="logo" className="w-10 h-10" />
           </div>
           <nav className="flex flex-col items-center space-y-8">
-            <button className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
+            <button onClick={() => navigate('/dashboard')}
+                    className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
               <img src={screenIcon} alt="Monitor" className="w-8 h-8" />
             </button>
-            <button className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
+            <button onClick={() => navigate('/database')}
+                    className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
               <img src={databaseIcon} alt="Database" className="w-8 h-8" />
             </button>
           </nav>
           <div>
             <nav className="flex flex-col items-center space-y-8">
-            <button className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
+              <button onClick={() => navigate('/home')}
+                      className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
               <img src={homeIcon} alt="Home" className="w-8 h-8" />
             </button>
             <button

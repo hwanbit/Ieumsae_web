@@ -4,6 +4,7 @@ import Login from './components/Login'
 import Home from './components/Home'
 import Dashboard from './components/Dashboard'
 import HLSPlayer from "./components/HLSPlayer"
+import Database from "./components/Database.tsx";
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('token'))
@@ -42,6 +43,12 @@ function App() {
                     path="/hls"
                     element={
                         isAuthenticated ? <HLSPlayer /> : <Navigate to="/" />
+                    }
+                />
+                <Route
+                    path="/database"
+                    element={
+                        isAuthenticated ? <Database /> : <Navigate to="/" />
                     }
                 />
             </Routes>

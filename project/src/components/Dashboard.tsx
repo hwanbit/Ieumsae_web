@@ -186,22 +186,25 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
     return (
         <div className="min-h-screen bg-white text-black flex">
-            {/* Left Menu Bar */}
-            <div className="w-24 h-screen bg-white border-r-2 border-gray-100 fixed top-0 left-0 flex flex-col items-center py-6 justify-between z-50">
+            {/* 사이드 메뉴 고정 */}
+            <div className="w-24 h-screen bg-white border-r-2 border-gray-200 fixed top-0 left-0 flex flex-col items-center py-6 justify-between z-50">
                 <div>
                     <img src={logo} alt="logo" className="w-10 h-10" />
                 </div>
                 <nav className="flex flex-col items-center space-y-8">
-                    <button className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
+                    <button onClick={() => navigate('/dashboard')}
+                            className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
                         <img src={screenIcon} alt="Monitor" className="w-8 h-8" />
                     </button>
-                    <button className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
+                    <button onClick={() => navigate('/database')}
+                            className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
                         <img src={databaseIcon} alt="Database" className="w-8 h-8" />
                     </button>
                 </nav>
                 <div>
                     <nav className="flex flex-col items-center space-y-8">
-                        <button className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
+                        <button onClick={() => navigate('/home')}
+                                className="p-3 hover:bg-[rgba(112,174,248,0.3)] rounded-lg transition-colors">
                             <img src={homeIcon} alt="Home" className="w-8 h-8" />
                         </button>
                         <button
@@ -299,7 +302,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             </div>
 
             {/* Right Sidebar - Weather & Camera 3 */}
-            <div className="w-[400px] h-screen bg-white border-l-2 border-gray-100 fixed top-12 right-0 flex flex-col items-center py-6 justify-between px-4 overflow-y-auto">
+            <div className="w-[400px] h-screen bg-white border-l-2 border-gray-200 fixed top-12 right-0 flex flex-col items-center py-6 justify-between px-4 overflow-y-auto">
                 <div className="w-full space-y-2">
                     <div className="border border-b-gray-500 p-4 rounded-lg h-[215px] text-center">
                         <h3 className="mb-2 text-sm">실시간 {weather?.location || '서울'}의 날씨</h3>
@@ -332,7 +335,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         />
                     </div>
 
-                    <div className="border border-b-gray-500 p-4 rounded-lg mt-10">
+                    <div className="w-96 p-4 rounded-lg mt-10">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-sm">CCTV</h3>
                             <span className={`px-2 py-1 rounded text-xs ${connectionStatus.camera3 ? 'bg-green-600' : 'bg-red-600'}`}>
@@ -350,7 +353,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         </div>
                     </div>
 
-                    <div className="border border-gray-500 w-[365px] h-56 mt-10 overflow-y-auto rounded-lg bg-white text-black">
+                    <div className="border border-gray-500 w-[365px] h-60 mt-10 overflow-y-auto rounded-lg bg-white text-black">
                     {/* 상단 헤더: 감지 로그 + CAMERA ID */}
                     <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
                         <h3 className="font-semibold text-sm text-white">감지 로그</h3>
