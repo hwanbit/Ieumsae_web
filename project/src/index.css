@@ -8,8 +8,14 @@
   src: url("./fonts/NanumMyeongjo.otf") format("truetype");
 }
 
+@font-face {
+  font-family: "NanumBarunGothic";
+  font-weight: normal;
+  src: url("./fonts/NanumBarunGothic.otf") format("truetype");
+}
+
 :root {
-  font-family: NanumMyeongjo-Regular;
+  font-family: NanumBarunGothic;
 }
 
 body {

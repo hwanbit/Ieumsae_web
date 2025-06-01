@@ -302,8 +302,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             </div>
 
             {/* Right Sidebar - Weather & Camera 3 */}
-            <div className="w-[400px] h-screen bg-white border-l-2 border-gray-200 fixed top-12 right-0 flex flex-col items-center py-6 justify-between px-4 overflow-y-auto">
-                <div className="w-full space-y-2">
+            <div className="w-[400px] h-screen bg-white border-l-2 border-gray-200 fixed top-12 right-0 py-6 px-4">
+                <div className="w-full">
                     <div className="border border-b-gray-500 p-4 rounded-lg h-[215px] text-center">
                         <h3 className="mb-2 text-sm">실시간 {weather?.location || '서울'}의 날씨</h3>
                         {weatherError ? (
@@ -326,7 +326,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         )}
                     </div>
 
-                    <div className="flex h-24 items-center justify-center ml-28 mb-12 me-[100px] my-16">
+                    <div className="flex h-24 items-center justify-center ml-28 me-[100px] my-2">
                         <Lottie
                             animationData={alarmlottie}
                             loop
@@ -335,7 +335,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         />
                     </div>
 
-                    <div className="w-96 p-4 rounded-lg mt-10">
+                    <div className="w-96 pl-0 pr-4 rounded-lg mb-4 overflow-y-auto ml-auto">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-sm">CCTV</h3>
                             <span className={`px-2 py-1 rounded text-xs ${connectionStatus.camera3 ? 'bg-green-600' : 'bg-red-600'}`}>
@@ -353,7 +353,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         </div>
                     </div>
 
-                    <div className="border border-gray-500 w-[365px] h-60 mt-10 overflow-y-auto rounded-lg bg-white text-black">
+                    <div className="border border-gray-500 w-[365px] h-60 mt-6 overflow-y-auto rounded-lg bg-white text-black">
                     {/* 상단 헤더: 감지 로그 + CAMERA ID */}
                     <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
                         <h3 className="font-semibold text-sm text-white">감지 로그</h3>
