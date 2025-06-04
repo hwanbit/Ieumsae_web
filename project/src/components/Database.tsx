@@ -7,14 +7,15 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
     Tooltip,
     Legend,
-} from 'recharts';
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import logo from "../assets/ieumsae_logo.png";
 import screenIcon from '../assets/screen.svg';
 import databaseIcon from '../assets/database.svg';
@@ -23,8 +24,16 @@ import logoutIcon from "../assets/logout.svg";
 import llm0lottie from '../assets/llm_normal.json';
 import llm1lottie from '../assets/llm_oper.json';
 import Lottie from "react-lottie-player";
-import alarmlottie from "../assets/alarm_lottie.json";
+// import alarmlottie from "../assets/alarm_lottie.json";
 
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 interface Detection {
     id: string;
@@ -33,6 +42,15 @@ interface Detection {
     timestamp: string;
     date: string;
     object_type: string;
+}
+
+interface ChartData {
+    labels: string[];
+    datasets: {
+        label: string;
+        data: number[];
+        backgroundColor: string;
+    }[];
 }
 
 const columnHelper = createColumnHelper<Detection>();
@@ -65,7 +83,8 @@ function Database({ onLogout }: { onLogout: () => void }) {
     const [llmInput, setLlmInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<Detection[]>([]);
-    const [chartData, setChartData] = useState<any[]>([]);
+    const [chartData, setChartData] = useState<ChartData | null>(null);
+    const [lottieState, setLottieState] = useState<'normal' | 'operating'>('normal');
 
     const handleLogout = () => {
         sessionStorage.removeItem('token')
@@ -81,7 +100,8 @@ function Database({ onLogout }: { onLogout: () => void }) {
 
     const handleLLMSubmit = async () => {
         setLoading(true);
-        try {
+        setLottieState('operating');
+        try { // LLM api 호출
             const response = await fetch('http://localhost:5000/api/query', {
                 method: 'POST',
                 headers: {
@@ -91,13 +111,38 @@ function Database({ onLogout }: { onLogout: () => void }) {
             });
 
             const result = await response.json();
-            setData(result.data);
-            setChartData(result.chartData);
+            setData(result.data); // 테이블 데이터 업데이트
+
+            // 차트 데이터가 있으면 시각화
+            if (result.chartData) {
+                setChartData({
+                    labels: result.chartData.map((item: any) => item.name),
+                    datasets: [{
+                        label: '데이터 분석 결과',
+                        data: result.chartData.map((item: any) => item.value),
+                        backgroundColor: '#0099ff',
+                    }]
+                });
+            }
         } catch (error) {
             console.error('Error:', error);
         } finally {
             setLoading(false);
+            setLottieState('normal');
         }
+    };
+
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top' as const,
+            },
+            title: {
+                display: true,
+                text: '데이터 시각화',
+            },
+        },
     };
 
     return (
@@ -169,16 +214,9 @@ function Database({ onLogout }: { onLogout: () => void }) {
                         </table>
                     </div>
 
-                    {chartData.length > 0 && (
+                    {chartData && (
                         <div className="mt-6">
-                            <BarChart width={600} height={300} data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Legend />
-                                <Bar dataKey="value" fill="#0099ff" />
-                            </BarChart>
+                            <Bar options={chartOptions} data={chartData} />
                         </div>
                     )}
                 </div>
@@ -189,7 +227,7 @@ function Database({ onLogout }: { onLogout: () => void }) {
                         <h2 className="text-xl font-semibold mb-2">데이터 분석 도우미</h2>
                         <div className="flex h-24 items-center justify-center ml-28 mb-12 me-[100px] my-16">
                             <Lottie
-                                animationData={llm0lottie}
+                                animationData={lottieState === 'normal' ? llm0lottie : llm1lottie}
                                 loop
                                 play
                                 style={{ width: 180, height: 180 }}
@@ -200,12 +238,12 @@ function Database({ onLogout }: { onLogout: () => void }) {
                         </p>
                     </div>
                     <div className="space-y-4">
-            <textarea
-                value={llmInput}
-                onChange={(e) => setLlmInput(e.target.value)}
-                placeholder="시각화하고 싶은 데이터를 입력해 주세요."
-                className="w-full h-32 px-4 py-2 bg-white text-black border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+                        <textarea
+                            value={llmInput}
+                            onChange={(e) => setLlmInput(e.target.value)}
+                            placeholder="시각화하고 싶은 데이터를 입력해 주세요."
+                            className="w-full h-32 px-4 py-2 bg-white text-black border border-gray-600 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                         <button
                             onClick={handleLLMSubmit}
                             disabled={loading}
