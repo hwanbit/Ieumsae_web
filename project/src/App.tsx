@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react'
 import Login from './components/Login'
 import Home from './components/Home'
 import Dashboard from './components/Dashboard'
-import HLSPlayer from "./components/HLSPlayer"
-import Database from "./components/Database.tsx";
+import Database from "./components/Database";
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('token'))
@@ -40,15 +39,9 @@ function App() {
                     }
                 />
                 <Route
-                    path="/hls"
-                    element={
-                        isAuthenticated ? <HLSPlayer /> : <Navigate to="/" />
-                    }
-                />
-                <Route
                     path="/database"
                     element={
-                        isAuthenticated ? <Database /> : <Navigate to="/" />
+                        isAuthenticated ? <Database onLogout={() => setIsAuthenticated(false)} /> : <Navigate to="/" />
                     }
                 />
             </Routes>
