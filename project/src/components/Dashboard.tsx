@@ -36,6 +36,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     const [logs3, setLogs3] = useState<DetectionLog[]>([])
     const [weather, setWeather] = useState<WeatherData | null>(null)
     const [weatherError, setWeatherError] = useState<string | null>(null)
+    const [sidebarOpen, setSidebarOpen] = useState(false)
 
     const handleLogout = () => {
         sessionStorage.removeItem('token')
@@ -186,8 +187,22 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
     return (
         <div className="min-h-screen bg-white text-black flex">
-            {/* 사이드 메뉴 고정 */}
-            <div className="w-24 h-screen bg-white border-r-2 border-gray-200 fixed top-0 left-0 flex flex-col items-center py-6 justify-between z-50">
+            {/* 모바일 메뉴 버튼 */}
+            <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white border border-gray-300 rounded-lg shadow-lg"
+            >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            {/* 사이드 메뉴 */}
+            <div className={`
+                w-24 h-screen bg-white border-r-2 border-gray-200 fixed top-0 left-0 flex flex-col items-center py-6 justify-between z-40
+                lg:translate-x-0 transition-transform duration-300 ease-in-out
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}>
                 <div>
                     <img src={logo} alt="logo" className="w-10 h-10" />
                 </div>
@@ -216,21 +231,29 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 </div>
             </div>
 
+            {/* 모바일 오버레이 */}
+            {sidebarOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Main Content Area */}
-            <div className="flex-1 min-h-screen pl-24 pr-[400px] py-6">
+            <div className="flex-1 min-h-screen lg:pl-24 xl:pr-[400px] py-6 px-4 lg:px-0">
                 <header className="mb-6">
-                    <h3 className="text-3xl font-bold ml-12">관리자 모드</h3>
+                    <h3 className="text-2xl lg:text-3xl font-bold lg:ml-12 mt-12 lg:mt-0">관리자 모드</h3>
                 </header>
 
-                <div className="grid grid-cols-2 pr-[50px] gap-6 ml-12">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:ml-12 xl:pr-[50px]">
                     {/* 카메라 1 */}
                     <div className="space-y-4">
                         <div className="p-4 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
-                                <h3>CAMERA ID: 127.128.56.05</h3>
-                                <span className={`px-2 py-1 rounded text-xs ${connectionStatus.camera1 ? 'bg-green-600' : 'bg-red-600'}`}>
-                {connectionStatus.camera1 ? '연결됨' : '연결 안됨'}
-              </span>
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2">
+                                <h3 className="text-sm lg:text-base">CAMERA ID: 127.128.56.05</h3>
+                                <span className={`px-2 py-1 rounded text-xs w-fit ${connectionStatus.camera1 ? 'bg-green-600' : 'bg-red-600'}`}>
+                                    {connectionStatus.camera1 ? '연결됨' : '연결 안됨'}
+                                </span>
                             </div>
                             <div className="aspect-video bg-black rounded-lg overflow-hidden">
                                 {connectionStatus.camera1 ? (
@@ -242,21 +265,23 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                                 )}
                             </div>
                         </div>
-                        <div className="border border-gray-500 w-[619px] h-96 ml-4 overflow-y-auto rounded-lg bg-white text-black">
-                            {/* 상단 헤더: 감지 로그 + CAMERA ID */}
-                            <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
-                                <h3 className="font-semibold text-white">감지 로그</h3>
-                                <span className="text-sm text-white">CAMERA ID: 127.128.56.05</span>
-                            </header>
+                        <div className="p-4">
+                            <div className="border border-gray-500 h-60 lg:h-96 overflow-y-auto rounded-lg bg-white text-black">
+                                {/* 상단 헤더: 감지 로그 + CAMERA ID */}
+                                <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
+                                    <h3 className="font-semibold text-white text-sm lg:text-base">감지 로그</h3>
+                                    <span className="text-xs lg:text-sm text-white">CAMERA ID: 127.128.56.05</span>
+                                </header>
 
-                            {/* 로그 리스트 영역 */}
-                            <div className="p-4 text-sm text-black">
-                                {logs1.map((log, index) => (
-                                    <div key={index} className="mb-2 text-black">
-                                        <span className="text-black">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
-                                        <span className="ml-2 text-black">{log.objects.join(', ')}</span>
-                                    </div>
-                                ))}
+                                {/* 로그 리스트 영역 */}
+                                <div className="p-4 text-xs lg:text-sm text-black">
+                                    {logs1.map((log, index) => (
+                                        <div key={index} className="mb-2 text-black">
+                                            <span className="text-black">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
+                                            <span className="ml-2 text-black">{log.objects.join(', ')}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -264,11 +289,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     {/* 카메라 2 */}
                     <div className="space-y-4">
                         <div className="p-4 rounded-lg">
-                            <div className="flex justify-between items-center mb-2">
-                                <h3>CAMERA ID: 127.128.56.06</h3>
-                                <span className={`px-2 py-1 rounded text-xs ${connectionStatus.camera2 ? 'bg-green-600' : 'bg-red-600'}`}>
-                {connectionStatus.camera2 ? '연결됨' : '연결 안됨'}
-              </span>
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2">
+                                <h3 className="text-sm lg:text-base">CAMERA ID: 127.128.56.06</h3>
+                                <span className={`px-2 py-1 rounded text-xs w-fit ${connectionStatus.camera2 ? 'bg-green-600' : 'bg-red-600'}`}>
+                                    {connectionStatus.camera2 ? '연결됨' : '연결 안됨'}
+                                </span>
                             </div>
                             <div className="aspect-video bg-black rounded-lg overflow-hidden">
                                 {connectionStatus.camera2 ? (
@@ -280,16 +305,91 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                                 )}
                             </div>
                         </div>
-                        <div className="border border-gray-500 w-[619px] h-96 ml-4 overflow-y-auto rounded-lg bg-white text-black">
-                            {/* 상단 헤더: 감지 로그 + CAMERA ID */}
-                            <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
-                                <h3 className="font-semibold text-white">감지 로그</h3>
-                                <span className="text-sm text-white">CAMERA ID: 127.128.56.06</span>
-                            </header>
+                        <div className="p-4">
+                            <div className="border border-gray-500 h-60 lg:h-96 overflow-y-auto rounded-lg bg-white text-black">
+                                {/* 상단 헤더: 감지 로그 + CAMERA ID */}
+                                <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
+                                    <h3 className="font-semibold text-white text-sm lg:text-base">감지 로그</h3>
+                                    <span className="text-xs lg:text-sm text-white">CAMERA ID: 127.128.56.06</span>
+                                </header>
 
-                            {/* 로그 리스트 영역 */}
+                                {/* 로그 리스트 영역 */}
+                                <div className="p-4 text-xs lg:text-sm text-black">
+                                    {logs2.map((log, index) => (
+                                        <div key={index} className="mb-2 text-black">
+                                            <span className="text-black">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
+                                            <span className="ml-2 text-black">{log.objects.join(', ')}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 모바일에서 카메라 3 및 날씨 정보 */}
+                <div className="xl:hidden mt-8 space-y-6 lg:ml-12">
+                    {/* 날씨 정보 */}
+                    <div className="border border-b-gray-500 p-4 rounded-lg h-[215px] text-center bg-white">
+                        <h3 className="mb-2 text-sm">실시간 {weather?.location || '서울'}의 날씨</h3>
+                        {weatherError ? (
+                            <p className="text-red-500">{weatherError}</p>
+                        ) : weather ? (
+                            <div>
+                                <img
+                                    src={`http://openweathermap.org/img/wn/${weather.icon}@2x.png`}
+                                    alt={weather.description}
+                                    className="mx-auto w-16 h-16 mb-2"
+                                />
+                                <div className="text-2xl font-bold mb-2">{weather.temperature}°C</div>
+                                <div className="text-black text-sm capitalize">{weather.description}</div>
+                                <div className="text-xs text-gray-700 mt-2">
+                                    {format(new Date(weather.timestamp), 'HH:mm 업데이트')}
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="text-gray-400">날씨 데이터를 로드 중...</p>
+                        )}
+                    </div>
+
+                    {/* Lottie 애니메이션 */}
+                    <div className="flex h-24 items-center justify-center">
+                        <Lottie
+                            animationData={alarmlottie}
+                            loop
+                            play
+                            style={{ width: 180, height: 180 }}
+                        />
+                    </div>
+
+                    {/* 카메라 3 */}
+                    <div className="p-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2">
+                            <h3 className="text-sm">CCTV</h3>
+                            <span className={`px-2 py-1 rounded text-xs w-fit ${connectionStatus.camera3 ? 'bg-green-600' : 'bg-red-600'}`}>
+                                {connectionStatus.camera3 ? '연결됨' : '연결 안됨'}
+                            </span>
+                        </div>
+                        <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                            {connectionStatus.camera3 ? (
+                                <ReactPlayer url={rtspStream3} playing width="100%" height="100%" controls />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <p className="text-red-500">연결 시도 중...</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 카메라 3 로그 */}
+                    <div className="p-4">
+                        <div className="border border-gray-500 h-60 overflow-y-auto rounded-lg bg-white text-black">
+                            <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
+                                <h3 className="font-semibold text-sm text-white">감지 로그</h3>
+                                <span className="text-sm text-white">CCTV</span>
+                            </header>
                             <div className="p-4 text-sm text-black">
-                                {logs2.map((log, index) => (
+                                {logs3.map((log, index) => (
                                     <div key={index} className="mb-2 text-black">
                                         <span className="text-black">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
                                         <span className="ml-2 text-black">{log.objects.join(', ')}</span>
@@ -301,9 +401,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                 </div>
             </div>
 
-            {/* Right Sidebar - Weather & Camera 3 */}
-            <div className="w-[400px] h-screen bg-white border-l-2 border-gray-200 fixed top-12 right-0 py-6 px-4">
-                <div className="w-full">
+            {/* Right Sidebar - Weather & Camera 3 (데스크톱에서만 표시) */}
+            <div className="hidden xl:block w-[400px] h-screen bg-white border-l-2 border-gray-200 fixed top-0 right-0 py-6 px-4">
+                <div className="w-full mt-12">
                     <div className="border border-b-gray-500 p-4 rounded-lg h-[215px] text-center">
                         <h3 className="mb-2 text-sm">실시간 {weather?.location || '서울'}의 날씨</h3>
                         {weatherError ? (
@@ -339,8 +439,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-sm">CCTV</h3>
                             <span className={`px-2 py-1 rounded text-xs ${connectionStatus.camera3 ? 'bg-green-600' : 'bg-red-600'}`}>
-              {connectionStatus.camera3 ? '연결됨' : '연결 안됨'}
-            </span>
+                                {connectionStatus.camera3 ? '연결됨' : '연결 안됨'}
+                            </span>
                         </div>
                         <div className="aspect-video bg-black rounded-lg overflow-hidden">
                             {connectionStatus.camera3 ? (
@@ -354,22 +454,19 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
                     </div>
 
                     <div className="border border-gray-500 w-[365px] h-60 mt-6 overflow-y-auto rounded-lg bg-white text-black">
-                    {/* 상단 헤더: 감지 로그 + CAMERA ID */}
-                    <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
-                        <h3 className="font-semibold text-sm text-white">감지 로그</h3>
-                        <span className="text-sm text-white">CCTV</span>
-                    </header>
-
-                    {/* 로그 리스트 영역 */}
-                    <div className="p-4 text-sm text-black">
-                        {logs3.map((log, index) => (
-                            <div key={index} className="mb-2 text-black">
-                                <span className="text-black">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
-                                <span className="ml-2 text-black">{log.objects.join(', ')}</span>
-                            </div>
-                        ))}
+                        <header className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-[#003366]">
+                            <h3 className="font-semibold text-sm text-white">감지 로그</h3>
+                            <span className="text-sm text-white">CCTV</span>
+                        </header>
+                        <div className="p-4 text-sm text-black">
+                            {logs3.map((log, index) => (
+                                <div key={index} className="mb-2 text-black">
+                                    <span className="text-black">{format(new Date(log.timestamp), 'HH:mm:ss')}</span>
+                                    <span className="ml-2 text-black">{log.objects.join(', ')}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
         </div>
