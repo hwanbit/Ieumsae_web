@@ -37,10 +37,14 @@ ChartJS.register(
 interface Detection {
     id: string;
     confidence: number;
-    camera_id: string;
-    timestamp: string;
     date: string;
-    object_type: string;
+    detection_class: string;
+    event_flag: boolean;
+    object_id: string;
+    signal_status: boolean;
+    time: string;
+    timestamp: string;
+    selected?: boolean;
 }
 
 interface ChartData {
@@ -55,19 +59,61 @@ interface ChartData {
 const columnHelper = createColumnHelper<Detection>();
 
 const columns = [
-    columnHelper.accessor('object_type', {
+    columnHelper.display({
+        id: 'select',
+        header: '',
+        cell: ({ row }) => (
+            <input
+                type="checkbox"
+                checked={row.original.selected || false}
+                onChange={(e) => {
+                    // 체크박스 상태 업데이트 로직
+                }}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
+            />
+        ),
+    }),
+    columnHelper.accessor('object_id', {
+        header: '카메라',
+        cell: info => info.getValue(),
+    }),
+    columnHelper.accessor('detection_class', {
         header: '객체',
+        cell: info => info.getValue(),
+    }),
+    columnHelper.accessor('id', {
+        header: '객체 ID',
         cell: info => info.getValue(),
     }),
     columnHelper.accessor('confidence', {
         header: '정확도',
         cell: info => `${(info.getValue() * 100).toFixed(0)}%`,
     }),
-    columnHelper.accessor('camera_id', {
-        header: '카메라',
-        cell: info => info.getValue(),
+    columnHelper.accessor('event_flag', {
+        header: '이벤트 발생',
+        cell: info => (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                info.getValue()
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-green-100 text-green-800'
+            }`}>
+                {info.getValue() ? '발생' : '정상'}
+            </span>
+        ),
     }),
-    columnHelper.accessor('timestamp', {
+    columnHelper.accessor('signal_status', {
+        header: '신호 상태',
+        cell: info => (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                info.getValue()
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
+            }`}>
+                {info.getValue() ? '활성' : '비활성'}
+            </span>
+        ),
+    }),
+    columnHelper.accessor('time', {
         header: '시간',
         cell: info => info.getValue(),
     }),
@@ -84,30 +130,42 @@ const generateMockData = (query: string): { data: Detection[], chartData?: any }
         const mockDetections: Detection[] = [
             // 자동차 데이터 (70% = 14개)
             ...Array.from({ length: 14 }, (_, i) => ({
-                id: `car_${i + 1}`,
+                id: `car_obj_${i + 1}`,
                 confidence: 0.85 + Math.random() * 0.1,
-                camera_id: `CAM_${Math.floor(Math.random() * 5) + 1}`,
-                timestamp: `${8 + Math.floor(i / 2)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
                 date: '2025-06-05',
-                object_type: '자동차'
+                detection_class: '자동차',
+                event_flag: Math.random() > 0.8,
+                object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+                signal_status: Math.random() > 0.1,
+                time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+                timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+                selected: false
             })),
             // 사람 데이터 (20% = 4개)
             ...Array.from({ length: 4 }, (_, i) => ({
-                id: `person_${i + 1}`,
+                id: `person_obj_${i + 1}`,
                 confidence: 0.78 + Math.random() * 0.15,
-                camera_id: `CAM_${Math.floor(Math.random() * 5) + 1}`,
-                timestamp: `${9 + i}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
                 date: '2025-06-05',
-                object_type: '사람'
+                detection_class: '사람',
+                event_flag: Math.random() > 0.7,
+                object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+                signal_status: Math.random() > 0.1,
+                time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+                timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+                selected: false
             })),
             // 자전거 데이터 (10% = 2개)
             ...Array.from({ length: 2 }, (_, i) => ({
-                id: `bike_${i + 1}`,
+                id: `bike_obj_${i + 1}`,
                 confidence: 0.72 + Math.random() * 0.2,
-                camera_id: `CAM_${Math.floor(Math.random() * 5) + 1}`,
-                timestamp: `${10 + i * 2}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
                 date: '2025-06-05',
-                object_type: '자전거'
+                detection_class: '자전거',
+                event_flag: Math.random() > 0.6,
+                object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+                signal_status: Math.random() > 0.1,
+                time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+                timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+                selected: false
             }))
         ];
 
@@ -123,12 +181,16 @@ const generateMockData = (query: string): { data: Detection[], chartData?: any }
     // 다른 테스트 케이스들도 추가 가능
     if (query.includes('시간대별') || query.includes('hourly')) {
         const mockDetections: Detection[] = Array.from({ length: 8 }, (_, i) => ({
-            id: `detection_${i + 1}`,
+            id: `detection_obj_${i + 1}`,
             confidence: 0.8 + Math.random() * 0.15,
-            camera_id: `CAM_${Math.floor(Math.random() * 3) + 1}`,
-            timestamp: `${9 + i}:00`,
             date: '2025-06-05',
-            object_type: ['자동차', '사람', '자전거'][Math.floor(Math.random() * 3)]
+            detection_class: ['자동차', '사람', '자전거'][Math.floor(Math.random() * 3)],
+            event_flag: Math.random() > 0.7,
+            object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+            signal_status: Math.random() > 0.1,
+            time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+            timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+            selected: false
         }));
 
         const chartData = [
@@ -281,10 +343,27 @@ function Database({ onLogout }: { onLogout: () => void }) {
             {/* Main Content */}
             <div className="flex-1 p-6 flex ml-24">
                 {/* Table Section */}
-                <div className="flex-1 bg-white text-black border border-gray-600 rounded-lg p-4 mr-4">
-                    <div className="mb-4">
-                        <h2 className="text-xl font-semibold">감지 데이터</h2>
-                        <p className="text-sm text-gray-500">총 {data.length}건의 감지 결과</p>
+                <div className="flex-1 bg-white text-black rounded-lg p-6 mr-4 shadow-sm">
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800">데이터베이스</h2>
+                        <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center space-x-4">
+                                <input
+                                    type="text"
+                                    placeholder="검색"
+                                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                                <select className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option>필터</option>
+                                </select>
+                                <button className="px-4 py-2 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900 transition-colors">
+                                    검색
+                                </button>
+                            </div>
+                            <button className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors">
+                                + 그래프 생성
+                            </button>
+                        </div>
                     </div>
 
                     {chartData && (
@@ -293,13 +372,13 @@ function Database({ onLogout }: { onLogout: () => void }) {
                         </div>
                     )}
 
-                    <div className="overflow-x-auto">
+                    <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
                         <table className="min-w-full">
-                            <thead>
+                            <thead className="bg-gray-50">
                             {table.getHeaderGroups().map(headerGroup => (
-                                <tr key={headerGroup.id} className="border-b border-gray-200">
+                                <tr key={headerGroup.id}>
                                     {headerGroup.headers.map(header => (
-                                        <th key={header.id} className="px-4 py-3 text-left font-medium text-gray-700">
+                                        <th key={header.id} className="px-4 py-3 text-left text-xs font-medium text-gray-600 border-b border-gray-200 whitespace-nowrap">
                                             {flexRender(
                                                 header.column.columnDef.header,
                                                 header.getContext()
@@ -309,11 +388,11 @@ function Database({ onLogout }: { onLogout: () => void }) {
                                 </tr>
                             ))}
                             </thead>
-                            <tbody>
+                            <tbody className="bg-white">
                             {table.getRowModel().rows.map((row, index) => (
-                                <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                                     {row.getVisibleCells().map(cell => (
-                                        <td key={cell.id} className="px-4 py-3 text-sm">
+                                        <td key={cell.id} className="px-4 py-3 text-xs text-gray-700 border-b border-gray-100 whitespace-nowrap">
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext()
@@ -324,6 +403,20 @@ function Database({ onLogout }: { onLogout: () => void }) {
                             ))}
                             </tbody>
                         </table>
+
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                                총 {data.length} 건의 데이터가 {data.length} 중 표시됨
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100 transition-colors">
+                                    이전
+                                </button>
+                                <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100 transition-colors">
+                                    다음 →
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
