@@ -351,16 +351,16 @@ function Database({ onLogout }: { onLogout: () => void }) {
                                 <input
                                     type="text"
                                     placeholder="검색"
-                                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 bg-[#002B51] focus:border-transparent"
                                 />
-                                <select className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <select className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 bg-[#002B51]">
                                     <option>필터</option>
                                 </select>
                                 <button className="px-4 py-2 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900 transition-colors">
                                     검색
                                 </button>
                             </div>
-                            <button className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors">
+                            <button className="px-4 py-2 bg-[#002B51] text-white rounded-md text-sm hover:bg-blue-700 transition-colors">
                                 + 그래프 생성
                             </button>
                         </div>
@@ -435,7 +435,7 @@ function Database({ onLogout }: { onLogout: () => void }) {
                         <p className="text-sm text-gray-400">
                             자연어로 데이터를 분석하고 시각화할 수 있습니다.
                         </p>
-                        <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+                        <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs bg-[#002B51]">
                             <strong>테스트 예시:</strong><br/>
                             • "2025-06-05일의 객체 비율 그래프로 시각화해줘."<br/>
                             • "시간대별 감지 현황 보여줘"
