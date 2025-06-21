@@ -110,7 +110,7 @@ function Home({ onLogout }: { onLogout: () => void }) {
             </div>
 
             {/* 기능 설명 섹션 */}
-            <div className="bg-white p-4 lg:p-6 rounded-lg mb-8 lg:ml-[160px] my-8 shadow-sm border border-gray-100">
+            <div className="bg-white p-4 mb-8 lg:ml-[160px] my-8">
               <h2 className="text-sm lg:text-xl font-bold mb-4 text-center lg:text-left">
                 "사이드 메뉴를 통해 시스템의 주요 기능에 빠르게 접근할 수 있습니다. 각 아이콘은 다음과 같은 기능을 제공합니다."
               </h2>

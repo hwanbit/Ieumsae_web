@@ -3,4 +3,4 @@ Flask-Cors==4.0.0
 Flask-SQLAlchemy==3.1.1
 mysql-connector-python==8.3.0
 python-dotenv==1.0.1
-PyJWT==2.8.1np
+PyJWT==2.8.1

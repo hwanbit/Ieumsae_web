@@ -346,21 +346,21 @@ function Database({ onLogout }: { onLogout: () => void }) {
                 <div className="flex-1 bg-white text-black rounded-lg p-6 mr-4 shadow-sm">
                     <div className="mb-6">
                         <h2 className="text-2xl font-bold text-gray-800">데이터베이스</h2>
-                        <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center justify-between mt-4 ml-[800px]">
                             <div className="flex items-center space-x-4">
                                 <input
                                     type="text"
                                     placeholder="검색"
-                                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 bg-[#002B51] focus:border-transparent"
+                                    className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
-                                <select className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 bg-[#002B51]">
+                                <select className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                                     <option>필터</option>
                                 </select>
-                                <button className="px-4 py-2 bg-gray-800 text-white rounded-md text-sm hover:bg-gray-900 transition-colors">
+                                <button className="px-5 py-2 bg-[#002B51] text-white rounded-md text-sm hover:bg-[#00004F] transition-colors">
                                     검색
                                 </button>
                             </div>
-                            <button className="px-4 py-2 bg-[#002B51] text-white rounded-md text-sm hover:bg-blue-700 transition-colors">
+                            <button className="px-4 py-2 bg-[#002B51] text-white rounded-md text-sm hover:bg-[#00004F] transition-colors">
                                 + 그래프 생성
                             </button>
                         </div>
@@ -413,7 +413,7 @@ function Database({ onLogout }: { onLogout: () => void }) {
                                     이전
                                 </button>
                                 <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100 transition-colors">
-                                    다음 →
+                                    다음
                                 </button>
                             </div>
                         </div>
@@ -421,7 +421,7 @@ function Database({ onLogout }: { onLogout: () => void }) {
                 </div>
 
                 {/* LLM Input Section */}
-                <div className="w-96 bg-white text-black border border-gray-600 rounded-lg p-4">
+                <div className="w-96 bg-white text-black border border-gray-300 rounded-lg p-4">
                     <div className="mb-4">
                         <h2 className="text-xl font-semibold mb-2">데이터 분석 도우미</h2>
                         <div className="flex h-24 items-center justify-center ml-28 mb-12 me-[100px] my-16">
@@ -432,10 +432,10 @@ function Database({ onLogout }: { onLogout: () => void }) {
                                 style={{ width: 180, height: 180 }}
                             />
                         </div>
-                        <p className="text-sm text-gray-400">
-                            자연어로 데이터를 분석하고 시각화할 수 있습니다.
-                        </p>
-                        <div className="mt-3 p-3 bg-blue-50 rounded-lg text-xs bg-[#002B51]">
+                        <div className="mt-3 p-3 bg-gray-100 rounded-lg text-xs bg-[#002B51]">
+                            <p className="text-sm text-black" font-bold>
+                                자연어로 데이터를 분석하고 시각화할 수 있습니다.<br/><br/>
+                            </p>
                             <strong>테스트 예시:</strong><br/>
                             • "2025-06-05일의 객체 비율 그래프로 시각화해줘."<br/>
                             • "시간대별 감지 현황 보여줘"
@@ -446,12 +446,12 @@ function Database({ onLogout }: { onLogout: () => void }) {
                             value={llmInput}
                             onChange={(e) => setLlmInput(e.target.value)}
                             placeholder="시각화하고 싶은 데이터를 입력해 주세요."
-                            className="w-full h-32 px-4 py-2 bg-white text-black border border-gray-600 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full h-32 px-4 py-2 bg-white text-black border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         <button
                             onClick={handleLLMSubmit}
                             disabled={loading}
-                            className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                            className="w-full py-2 bg-[#002B51] text-white rounded-lg hover:bg-[#00004F] transition-colors disabled:opacity-50"
                         >
                             {loading ? '처리중...' : '입력'}
                         </button>
