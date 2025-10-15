@@ -6,16 +6,34 @@ import {
     getCoreRowModel,
     useReactTable,
 } from '@tanstack/react-table';
+
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
     BarElement,
+    PointElement,
+    LineElement,
+    ArcElement,
     Title,
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+
+import { Bar, Line, Pie } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    PointElement,
+    LineElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend
+);
+
 import logo from "../assets/ieumsae_logo.png";
 import screenIcon from '../assets/screen.svg';
 import databaseIcon from '../assets/database.svg';
@@ -24,15 +42,6 @@ import logoutIcon from "../assets/logout.svg";
 import llm0lottie from '../assets/llm_normal.json';
 import llm1lottie from '../assets/llm_oper.json';
 import Lottie from "react-lottie-player";
-
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend
-);
 
 interface Detection {
     id: string;
@@ -47,14 +56,34 @@ interface Detection {
     selected?: boolean;
 }
 
-interface ChartData {
+// ChartData 이름 충돌 해결
+interface CustomChartData {
     labels: string[];
     datasets: {
         label: string;
         data: number[];
         backgroundColor: string[];
+        borderColor?: string[];
+        borderWidth?: number;
     }[];
 }
+
+// API 응답 타입 정의
+interface ApiResponse {
+    success: boolean;
+    message?: string;
+    data?: any[];
+    llm_response: {
+        graph_type: 'bar' | 'line' | 'pie' | 'heatmap';
+        reason?: string;
+    };
+}
+
+// // Mock 데이터 차트 타입
+// interface MockChartDataPoint {
+//     name: string;
+//     value: number;
+// }
 
 const columnHelper = createColumnHelper<Detection>();
 
@@ -66,8 +95,9 @@ const columns = [
             <input
                 type="checkbox"
                 checked={row.original.selected || false}
-                onChange={(e) => {
+                onChange={() => {
                     // 체크박스 상태 업데이트 로직
+                    // 실제 구현시 setData를 통해 해당 row의 selected 값을 토글
                 }}
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded"
             />
@@ -123,101 +153,101 @@ const columns = [
     }),
 ];
 
-// 목업 데이터 생성 함수
-const generateMockData = (query: string): { data: Detection[], chartData?: any } => {
-    // 2025-06-05 객체 비율 그래프 요청 감지
-    if (query.includes('2025-06-05') && query.includes('객체') && query.includes('비율')) {
-        const mockDetections: Detection[] = [
-            // 자동차 데이터 (70% = 14개)
-            ...Array.from({ length: 14 }, (_, i) => ({
-                id: `car_obj_${i + 1}`,
-                confidence: 0.85 + Math.random() * 0.1,
-                date: '2025-06-05',
-                detection_class: '자동차',
-                event_flag: Math.random() > 0.8,
-                object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
-                signal_status: Math.random() > 0.1,
-                time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-                timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
-                selected: false
-            })),
-            // 사람 데이터 (20% = 4개)
-            ...Array.from({ length: 4 }, (_, i) => ({
-                id: `person_obj_${i + 1}`,
-                confidence: 0.78 + Math.random() * 0.15,
-                date: '2025-06-05',
-                detection_class: '사람',
-                event_flag: Math.random() > 0.7,
-                object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
-                signal_status: Math.random() > 0.1,
-                time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-                timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
-                selected: false
-            })),
-            // 자전거 데이터 (10% = 2개)
-            ...Array.from({ length: 2 }, (_, i) => ({
-                id: `bike_obj_${i + 1}`,
-                confidence: 0.72 + Math.random() * 0.2,
-                date: '2025-06-05',
-                detection_class: '자전거',
-                event_flag: Math.random() > 0.6,
-                object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
-                signal_status: Math.random() > 0.1,
-                time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-                timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
-                selected: false
-            }))
-        ];
-
-        const chartData = [
-            { name: '자동차', value: 70 },
-            { name: '사람', value: 20 },
-            { name: '자전거', value: 10 }
-        ];
-
-        return { data: mockDetections, chartData };
-    }
-
-    // 다른 테스트 케이스들도 추가 가능
-    if (query.includes('시간대별') || query.includes('hourly')) {
-        const mockDetections: Detection[] = Array.from({ length: 8 }, (_, i) => ({
-            id: `detection_obj_${i + 1}`,
-            confidence: 0.8 + Math.random() * 0.15,
-            date: '2025-06-05',
-            detection_class: ['자동차', '사람', '자전거'][Math.floor(Math.random() * 3)],
-            event_flag: Math.random() > 0.7,
-            object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
-            signal_status: Math.random() > 0.1,
-            time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-            timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
-            selected: false
-        }));
-
-        const chartData = [
-            { name: '09:00', value: 5 },
-            { name: '10:00', value: 8 },
-            { name: '11:00', value: 12 },
-            { name: '12:00', value: 15 },
-            { name: '13:00', value: 20 },
-            { name: '14:00', value: 18 },
-            { name: '15:00', value: 14 },
-            { name: '16:00', value: 10 }
-        ];
-
-        return { data: mockDetections, chartData };
-    }
-
-    // 기본 빈 응답
-    return { data: [] };
-};
+// // 목업 데이터 생성 함수 (DB 연동 후 사용하지 않음)
+// const generateMockData = (query: string): {
+//     data: Detection[],
+//     chartData?: MockChartDataPoint[]
+// } => {
+//     if (query.includes('2025-06-05') && query.includes('객체') && query.includes('비율')) {
+//         const mockDetections: Detection[] = [
+//             ...Array.from({ length: 14 }, (_, i) => ({
+//                 id: `car_obj_${i + 1}`,
+//                 confidence: 0.85 + Math.random() * 0.1,
+//                 date: '2025-06-05',
+//                 detection_class: '자동차',
+//                 event_flag: Math.random() > 0.8,
+//                 object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+//                 signal_status: Math.random() > 0.1,
+//                 time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+//                 timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+//                 selected: false
+//             })),
+//             ...Array.from({ length: 4 }, (_, i) => ({
+//                 id: `person_obj_${i + 1}`,
+//                 confidence: 0.78 + Math.random() * 0.15,
+//                 date: '2025-06-05',
+//                 detection_class: '사람',
+//                 event_flag: Math.random() > 0.7,
+//                 object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+//                 signal_status: Math.random() > 0.1,
+//                 time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+//                 timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+//                 selected: false
+//             })),
+//             ...Array.from({ length: 2 }, (_, i) => ({
+//                 id: `bike_obj_${i + 1}`,
+//                 confidence: 0.72 + Math.random() * 0.2,
+//                 date: '2025-06-05',
+//                 detection_class: '자전거',
+//                 event_flag: Math.random() > 0.6,
+//                 object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+//                 signal_status: Math.random() > 0.1,
+//                 time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+//                 timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+//                 selected: false
+//             }))
+//         ];
+//
+//         const chartData: MockChartDataPoint[] = [
+//             { name: '자동차', value: 70 },
+//             { name: '사람', value: 20 },
+//             { name: '자전거', value: 10 }
+//         ];
+//
+//         return { data: mockDetections, chartData };
+//     }
+//
+//     if (query.includes('시간대별') || query.includes('hourly')) {
+//         const mockDetections: Detection[] = Array.from({ length: 8 }, (_, i) => ({
+//             id: `detection_obj_${i + 1}`,
+//             confidence: 0.8 + Math.random() * 0.15,
+//             date: '2025-06-05',
+//             detection_class: ['자동차', '사람', '자전거'][Math.floor(Math.random() * 3)],
+//             event_flag: Math.random() > 0.7,
+//             object_id: `NANO-00${Math.floor(Math.random() * 9) + 1}`,
+//             signal_status: Math.random() > 0.1,
+//             time: `18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
+//             timestamp: `2025-06-05T18:0${Math.floor(Math.random() * 6)}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:00`,
+//             selected: false
+//         }));
+//
+//         const chartData: MockChartDataPoint[] = [
+//             { name: '09:00', value: 5 },
+//             { name: '10:00', value: 8 },
+//             { name: '11:00', value: 12 },
+//             { name: '12:00', value: 15 },
+//             { name: '13:00', value: 20 },
+//             { name: '14:00', value: 18 },
+//             { name: '15:00', value: 14 },
+//             { name: '16:00', value: 10 }
+//         ];
+//
+//         return { data: mockDetections, chartData };
+//     }
+//
+//     return { data: [] };
+// };
 
 function Database({ onLogout }: { onLogout: () => void }) {
     const navigate = useNavigate();
     const [llmInput, setLlmInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState<Detection[]>([]);
-    const [chartData, setChartData] = useState<ChartData | null>(null);
+    const [chartData, setChartData] = useState<CustomChartData | null>(null);
+    const [chartType, setChartType] = useState<'bar' | 'line' | 'pie' | null>(null);
+    const [chartTitle, setChartTitle] = useState('');
     const [lottieState, setLottieState] = useState<'normal' | 'operating'>('normal');
+    const [error, setError] = useState<string | null>(null);
 
     const handleLogout = () => {
         sessionStorage.removeItem('token')
@@ -232,52 +262,61 @@ function Database({ onLogout }: { onLogout: () => void }) {
     });
 
     const handleLLMSubmit = async () => {
+        if (!llmInput.trim()) {
+            setError('질문을 입력해주세요.');
+            return;
+        }
         setLoading(true);
         setLottieState('operating');
+        setError(null);
+        setChartData(null);
 
         try {
-            // LLM api 호출
-            //     const response = await fetch('http://localhost:5000/api/query', {
-            //         method: 'POST',
-            //         headers: {
-            //             'Content-Type': 'application/json',
-            //         },
-            //         body: JSON.stringify({ query: llmInput }),
-            //     });
-            //
-            //     const result = await response.json();
-            //     setData(result.data); // 테이블 데이터 업데이트
+            const response = await fetch('http://localhost:5000/api/query', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: llmInput }),
+            });
 
-            // 실제 API 호출 대신 목업 데이터 사용
-            await new Promise(resolve => setTimeout(resolve, 1500)); // 실제 API 호출 시뮬레이션
+            const result: ApiResponse = await response.json();
 
-            const result = generateMockData(llmInput);
-            setData(result.data);
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'API 요청 처리 중 오류가 발생했습니다.');
+            }
 
-            if (result.chartData) {
-                // 차트 색상 배열
-                const colors = [
-                    '#FF6384', // 빨간색
-                    '#36A2EB', // 파란색
-                    '#FFCE56', // 노란색
-                    '#4BC0C0', // 청록색
-                    '#9966FF', // 보라색
-                    '#FF9F40'  // 주황색
-                ];
+            setData(result.data || []);
+
+            if (result.data && result.data.length > 0) {
+                const graphType = result.llm_response.graph_type;
+                const keys = Object.keys(result.data[0]);
+                const labelKey = keys[0];
+                const valueKey = keys.length > 1 ? keys[1] : keys[0];
+
+                const labels = result.data.map((item: any) => String(item[labelKey]));
+                const values = result.data.map((item: any) => Number(item[valueKey]));
+
+                const colors = ['rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.5)', 'rgba(255, 206, 86, 0.5)', 'rgba(75, 192, 192, 0.5)', 'rgba(153, 102, 255, 0.5)', 'rgba(255, 159, 64, 0.5)'];
+                const borderColors = ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'];
 
                 setChartData({
-                    labels: result.chartData.map((item: any) => item.name),
+                    labels,
                     datasets: [{
-                        label: '감지 비율 (%)',
-                        data: result.chartData.map((item: any) => item.value),
-                        backgroundColor: colors.slice(0, result.chartData.length),
+                        label: llmInput,
+                        data: values,
+                        backgroundColor: colors.slice(0, values.length),
+                        borderColor: borderColors.slice(0, values.length),
+                        borderWidth: 1,
                     }]
                 });
+                setChartType(graphType === 'heatmap' ? 'bar' : graphType);
+                setChartTitle(result.llm_response.reason || '데이터 시각화');
             } else {
-                setChartData(null);
+                setData([]);
+                setError('시각화할 데이터가 없습니다.');
             }
-        } catch (error) {
-            console.error('Error:', error);
+
+        } catch (err) {
+            setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
         } finally {
             setLoading(false);
             setLottieState('normal');
@@ -287,24 +326,19 @@ function Database({ onLogout }: { onLogout: () => void }) {
     const chartOptions = {
         responsive: true,
         plugins: {
-            legend: {
-                position: 'top' as const,
-            },
-            title: {
-                display: true,
-                text: '2025-06-05 객체 감지 비율',
-            },
+            legend: { position: 'top' as const },
+            title: { display: true, text: chartTitle },
         },
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100,
-                ticks: {
-                    callback: function(value: any) {
-                        return value + '%';
-                    }
-                }
-            }
+        scales: { y: { beginAtZero: true } }
+    };
+
+    const renderChart = (): React.JSX.Element | null => {
+        if (!chartData) return null;
+        switch (chartType) {
+            case 'bar': return <Bar options={chartOptions} data={chartData} height={100} />;
+            case 'line': return <Line options={chartOptions} data={chartData} height={100} />;
+            case 'pie': return <Pie data={chartData} options={{...chartOptions, scales: undefined}} height={100} />;
+            default: return <Bar options={chartOptions} data={chartData} height={100} />;
         }
     };
 
@@ -366,9 +400,15 @@ function Database({ onLogout }: { onLogout: () => void }) {
                         </div>
                     </div>
 
+                    {error && (
+                        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                            {error}
+                        </div>
+                    )}
+
                     {chartData && (
                         <div className="mb-8">
-                            <Bar options={chartOptions} data={chartData} height={100} />
+                            {renderChart()}
                         </div>
                     )}
 
@@ -389,7 +429,7 @@ function Database({ onLogout }: { onLogout: () => void }) {
                             ))}
                             </thead>
                             <tbody className="bg-white">
-                            {table.getRowModel().rows.map((row, index) => (
+                            {table.getRowModel().rows.map((row) => (
                                 <tr key={row.id} className="hover:bg-gray-50 transition-colors">
                                     {row.getVisibleCells().map(cell => (
                                         <td key={cell.id} className="px-4 py-3 text-xs text-gray-700 border-b border-gray-100 whitespace-nowrap">
@@ -433,7 +473,7 @@ function Database({ onLogout }: { onLogout: () => void }) {
                             />
                         </div>
                         <div className="mt-3 p-3 bg-gray-100 rounded-lg text-xs bg-[#002B51]">
-                            <p className="text-sm text-black" font-bold>
+                            <p className="text-sm text-black font-bold">
                                 자연어로 데이터를 분석하고 시각화할 수 있습니다.<br/><br/>
                             </p>
                             <strong>테스트 예시:</strong><br/>
