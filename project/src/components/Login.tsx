@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
 import logo from '../assets/ieumsae_logo.png'
 
 interface LoginFormData {
@@ -30,7 +29,7 @@ function Login({ onLogin }: LoginProps) {
     setError('')
 
     try {
-      const response = await fetch('http://192.168.24.183:5000/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +104,7 @@ function Login({ onLogin }: LoginProps) {
           </form>
 
           <p className="text-center text-white text-opacity-100 text-sm">
-            로그인 문의 : connection@office.kopo.ac.kr
+            로그인 문의 : KOPO AISW
           </p>
         </div>
       </div>

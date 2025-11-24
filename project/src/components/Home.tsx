@@ -1,12 +1,10 @@
 import Lottie from "react-lottie-player";
-
 import {useState} from "react";
 import { useNavigate } from 'react-router-dom'
 import screenIcon from '../assets/screen.svg'
 import databaseIcon from '../assets/database.svg'
 import homeIcon from '../assets/home.svg'
 import logoutIcon from '../assets/logout.svg'
-
 import logo from '../assets/ieumsae_logo.png'
 import member from '../assets/ieumsae_person.png'
 import buslottie from '../assets/bus_lottie.json'
@@ -23,7 +21,7 @@ function Home({ onLogout }: { onLogout: () => void }) {
   }
 
   return (
-      <div className="min-h-screen bg-white text-black flex">
+      <div className="min-h-screen bg-white text-black flex flex-col lg:flex">
         {/* 모바일 메뉴 버튼 */}
         <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -33,6 +31,11 @@ function Home({ onLogout }: { onLogout: () => void }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+
+        {/* 모바일 헤더 */}
+        <div className="lg:hidden sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-5 flex items-center justify-center">
+          <h1 className="text-lg font-bold ml-3">이음새 홈</h1>
+        </div>
 
         {/* 사이드 메뉴 */}
         <div className={`
@@ -79,7 +82,7 @@ function Home({ onLogout }: { onLogout: () => void }) {
         {/* 메인 콘텐츠 */}
         <div className="flex flex-col flex-1 lg:ml-24 min-h-screen">
           {/* 헤더 */}
-          <header className="flex justify-between items-center p-4 pt-16 lg:pt-4">
+          <header className="hidden lg:flex justify-between items-center p-4 pt-16 lg:pt-4">
             <div className="text-xs">v1.0.1 (Beta)</div>
             <button
                 onClick={handleLogout}
@@ -90,7 +93,7 @@ function Home({ onLogout }: { onLogout: () => void }) {
           </header>
 
           {/* 메인 콘텐츠 */}
-          <main className="flex-grow px-4 lg:px-8">
+          <main className="flex-grow px-4 lg:px-8 pt-4 lg:pt-0">
             {/* 타이틀 섹션 */}
             <div className="flex flex-col lg:flex-row items-center justify-center mb-8 lg:mb-12 lg:mr-[580px] my-8 lg:my-16">
               <div className="mb-4 lg:mb-0">
@@ -149,7 +152,6 @@ function Home({ onLogout }: { onLogout: () => void }) {
               본 시스템은 교차로 안전을 위한 연구 프로젝트의 일환으로 개발되었습니다.
             </div>
             <div className="text-center text-xs lg:text-sm mb-4">
-              <div className="block lg:inline">이음새: connection@office.kopo.ac.kr</div>
               <div className="block lg:inline lg:ml-4">© 2025 IEUMSAE Team. All rights reserved.</div>
             </div>
             <div className="flex justify-center">
